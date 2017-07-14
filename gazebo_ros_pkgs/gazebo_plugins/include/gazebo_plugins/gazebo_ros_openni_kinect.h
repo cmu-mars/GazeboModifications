@@ -140,7 +140,9 @@ namespace gazebo
     protected: virtual void PublishCameraInfo();
 
     private: event::ConnectionPtr load_connection_;
-
+    protected: bool sensor_on_;
+    private: ros::Subscriber kinect_onoff_sub_;
+    protected: void sensorOnOffCallback(const std_msgs::String::ConstPtr& msg);
   };
 
 }

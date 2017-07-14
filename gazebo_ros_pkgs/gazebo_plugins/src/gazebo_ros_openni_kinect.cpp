@@ -103,6 +103,10 @@ void GazeboRosOpenniKinect::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sd
   else
     this->point_cloud_cutoff_max_ = _sdf->GetElement("pointCloudCutoffMax")->Get<double>();
 
+  if (!_sdf->HasElement("startState"))
+    this->sensor_on_ = true;
+  else
+    this->sensor_on_ = _sdf->GetElement("startState")->Get<bool>();
   load_connection_ = GazeboRosCameraUtils::OnLoad(boost::bind(&GazeboRosOpenniKinect::Advertise, this));
   GazeboRosCameraUtils::Load(_parent, _sdf);
 }
@@ -132,6 +136,7 @@ void GazeboRosOpenniKinect::Advertise()
         boost::bind( &GazeboRosOpenniKinect::DepthInfoDisconnect,this),
         ros::VoidPtr(), &this->camera_queue_);
   this->depth_image_camera_info_pub_ = this->rosnode_->advertise(depth_image_camera_info_ao);
+  this->kinect_onoff_sub = this->rosnode_->subscribe("/sensor/kinect/onoff", 10, &GazeboRosOpenniKinect::sensorOnOffCallback, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +193,10 @@ void GazeboRosOpenniKinect::OnNewDepthFrame(const float *_image,
   if (!this->initialized_ || this->height_ <=0 || this->width_ <=0)
     return;
 
+  if (!this->sensor_on_) {
+    return;
+  }
+
   this->depth_sensor_update_time_ = this->parentSensor->LastMeasurementTime();
   if (this->parentSensor->IsActive())
   {
@@ -224,6 +233,12 @@ void GazeboRosOpenniKinect::OnNewImageFrame(const unsigned char *_image,
 {
   if (!this->initialized_ || this->height_ <=0 || this->width_ <=0)
     return;
+
+  if (!this->sensor_on_) {
+    return;
+  }
+
+
 
   //ROS_ERROR_NAMED("openni_kinect", "camera_ new frame %s %s",this->parentSensor_->Name().c_str(),this->frame_name_.c_str());
   this->sensor_update_time_ = this->parentSensor_->LastMeasurementTime();
@@ -429,6 +444,9 @@ bool GazeboRosOpenniKinect::FillDepthImageHelper(
 
 void GazeboRosOpenniKinect::PublishCameraInfo()
 {
+  if (!this->sensor_on_) {
+    return;
+  }
   ROS_DEBUG_NAMED("openni_kinect", "publishing default camera info, then openni kinect camera info");
   GazeboRosCameraUtils::PublishCameraInfo();
 
@@ -473,5 +491,14 @@ void GazeboRosDepthCamera::PublishDisparityImage(const DepthImage& depth, ros::T
   pub_disparity_.publish (disp_msg);
 }
 */
+
+void GazeboRosOpenniKinect::sensorOnOffCallback(const std_msgs::String::ConstPtr& msg) {
+  if (strcmp(msg->data.c_str(), "on")==0) {
+    this->sensor_on_=true;
+  }
+  else if (strcmp(msg->data.c_str(), "off")==0) {
+    this->sensor_on_=false;
+  }
+}
 
 }
