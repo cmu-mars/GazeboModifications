@@ -34,6 +34,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/fill_image.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 #include <image_transport/image_transport.h>
 
 // gazebo stuff

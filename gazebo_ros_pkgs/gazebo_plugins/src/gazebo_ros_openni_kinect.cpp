@@ -136,7 +136,7 @@ void GazeboRosOpenniKinect::Advertise()
         boost::bind( &GazeboRosOpenniKinect::DepthInfoDisconnect,this),
         ros::VoidPtr(), &this->camera_queue_);
   this->depth_image_camera_info_pub_ = this->rosnode_->advertise(depth_image_camera_info_ao);
-  this->kinect_onoff_sub = this->rosnode_->subscribe("/sensor/kinect/onoff", 10, &GazeboRosOpenniKinect::sensorOnOffCallback, this);
+  this->kinect_onoff_sub_ = this->rosnode_->subscribe("/sensor/kinect/onoff", 10, &GazeboRosOpenniKinect::sensorOnOffCallback, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
