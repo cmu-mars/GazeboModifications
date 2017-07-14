@@ -64,6 +64,7 @@ DepthCamera::~DepthCamera()
 //////////////////////////////////////////////////
 void DepthCamera::Load(sdf::ElementPtr _sdf)
 {
+  std::cout << "BRASS: Loading DepthCamera\n";
   Camera::Load(_sdf);
   this->dataPtr->outputPoints =
     (_sdf->GetElement("depth_camera")->Get<std::string>("output")

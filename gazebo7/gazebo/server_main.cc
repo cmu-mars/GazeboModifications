@@ -23,7 +23,7 @@
 int main(int argc, char **argv)
 {
   gazebo::Server *server = NULL;
-
+  std::cout << "BRASS Patched Gazebo\n";
   try
   {
     // Initialize the informational logger. This will log warnings, and

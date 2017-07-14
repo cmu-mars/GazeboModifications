@@ -65,6 +65,7 @@ Camera::Camera(const std::string &_name, ScenePtr _scene,
                bool _autoRender)
   : dataPtr(new CameraPrivate)
 {
+  std::cout << "Creating Camera\n";
   this->initialized = false;
   this->sdf.reset(new sdf::Element);
   sdf::initFile("camera.sdf", this->sdf);
@@ -139,6 +140,7 @@ Camera::~Camera()
 //////////////////////////////////////////////////
 void Camera::Load(sdf::ElementPtr _sdf)
 {
+  std::cout << "Loading Camera\n";
   this->sdf->Copy(_sdf);
   this->Load();
 }
@@ -1489,13 +1491,21 @@ void Camera::SetCaptureDataOnce()
 //////////////////////////////////////////////////
 void Camera::CreateRenderTexture(const std::string &_textureName)
 {
-  int fsaa = 4;
+  unsigned int fsaa = 4;
 
   // Full-screen anti-aliasing only works correctly in 1.8 and above
 #if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 8
   fsaa = 0;
 #endif
-
+  fsaa = 0;
+  std::vector<unsigned int> fsaaLevels =
+	RenderEngine::Instance()->FSAALevels();
+  unsigned int targetFSAA = 4;
+  auto const it = std::find(fsaaLevels.begin(), fsaaLevels.end(), targetFSAA);
+  if (it != fsaaLevels.end()) {
+    fsaa = targetFSAA;
+  } 
+  std::cout << "BRASS: Variable 'fsaa' = " << fsaa << "\n";
   // Create the render texture
   this->renderTexture = (Ogre::TextureManager::getSingleton().createManual(
       _textureName,

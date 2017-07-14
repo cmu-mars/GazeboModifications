@@ -678,8 +678,31 @@ void RenderEngine::SetupRenderSystem()
   ///   FBO seem to be the only good option
   renderSys->setConfigOption("RTT Preferred Mode", "FBO");
 
-  renderSys->setConfigOption("FSAA", "4");
-
+//  renderSys->setConfigOption("FSAA", "4");
+  Ogre::ConfigOptionMap configMap = renderSys->getConfigOptions();
+  auto fsaaOption = configMap.find("FSAA");
+  if (fsaaOption != configMap.end()) {
+    auto values = (*fsaaOption).second.possibleValues;
+    for (auto const &str : values) {
+      int value = 0;
+      try {
+        value = std::stoi(str);
+      }
+      catch (...) {
+        continue;
+      }
+      this->dataPtr->fsaaLevels.push_back(value);
+    }
+  }
+  std::sort(this->dataPtr->fsaaLevels.begin(), this->dataPtr->fsaaLevels.end());
+  // Check if target fsaa is supported
+  unsigned int fsaa = 0;
+  unsigned int targetFSAA = 4;
+  auto const it = std::find(this->dataPtr->fsaaLevels.begin(), 
+    this->dataPtr->fsaaLevels.end(), targetFSAA);
+  if (it != this->dataPtr->fsaaLevels.end())
+    fsaa = targetFSAA;
+  renderSys->setConfigOption("FSAA", std::to_string(fsaa));
   this->dataPtr->root->setRenderSystem(renderSys);
 }
 
@@ -806,6 +829,11 @@ WindowManagerPtr RenderEngine::GetWindowManager() const
 Ogre::Root *RenderEngine::Root() const
 {
   return this->dataPtr->root;
+}
+
+std::vector<unsigned int> RenderEngine::FSAALevels() const
+{
+  return this->dataPtr->fsaaLevels;
 }
 
 #if (OGRE_VERSION >= ((1 << 16) | (9 << 8) | 0))
